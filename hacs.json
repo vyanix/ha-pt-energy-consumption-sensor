@@ -1,0 +1,7 @@
+{
+  "name": "PT Energy Consumption Sensor",
+  "render_readme": true,
+  "homeassistant": "2024.4.0",
+  "country": ["pt"],
+  "zip_release": false
+}

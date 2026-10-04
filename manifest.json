@@ -1,0 +1,11 @@
+{
+  "domain": "pt_energy_consumption_sensor",
+  "name": "PT Energy Consumption Sensor",
+  "version": "1.2.0",
+  "documentation": "https://github.com/vyanix/ha-pt-energy-consumption-sensor",
+  "issue_tracker": "https://github.com/vyanix/ha-pt-energy-consumption-sensor/issues",
+  "codeowners": ["@vyanix"],
+  "config_flow": true,
+  "iot_class": "calculated",
+  "integration_type": "service"
+}

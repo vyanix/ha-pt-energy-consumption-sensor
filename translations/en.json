@@ -1,0 +1,46 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "PT Energy Consumption",
+        "description": "Configure the electricity bill estimate. You must select a Shelly sensor that measures overall energy consumption (accumulated energy in kWh).",
+        "data": {
+          "statistic_id": "Overall consumption sensor (Shelly)",
+          "diaInicioFaturacao": "Billing cycle start day",
+          "custoEnergiaDia": "Energy cost per day (€)",
+          "custoEnergiaKwh": "Energy cost per kWh (€)",
+          "custoTarifaSocialKwh": "Social tariff per kWh (€)",
+          "custoIECKwh": "IEC tax per kWh (€)",
+          "custoAudiovisual": "Audiovisual tax (€)",
+          "custoDGEG": "DGEG tax (€)",
+          "valorConsumoIVAReduzido": "Reduced VAT consumption limit (kWh)"
+        }
+      }
+    },
+    "error": {
+      "missing_sensor": "You must select an overall consumption sensor (accumulated energy in kWh)."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Update the energy billing parameters.",
+        "data": {
+          "statistic_id": "Overall consumption sensor (Shelly)",
+          "diaInicioFaturacao": "Billing cycle start day",
+          "custoEnergiaDia": "Energy cost per day (€)",
+          "custoEnergiaKwh": "Energy cost per kWh (€)",
+          "custoTarifaSocialKwh": "Social tariff per kWh (€)",
+          "custoIECKwh": "IEC tax per kWh (€)",
+          "custoAudiovisual": "Audiovisual tax (€)",
+          "custoDGEG": "DGEG tax (€)",
+          "valorConsumoIVAReduzido": "Reduced VAT consumption limit (kWh)"
+        }
+      }
+    },
+    "error": {
+      "missing_sensor": "You must select an overall consumption sensor (accumulated energy in kWh)."
+    }
+  }
+}

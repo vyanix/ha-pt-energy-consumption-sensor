@@ -1,0 +1,46 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "PT Energy Consumption",
+        "description": "Configura a estimativa da fatura de energia elétrica. É necessário indicar um sensor Shelly que calcule o consumo geral (energia acumulada em kWh).",
+        "data": {
+          "statistic_id": "Sensor de consumo geral (Shelly)",
+          "diaInicioFaturacao": "Dia do início do ciclo de faturação",
+          "custoEnergiaDia": "Custo de energia por dia (€)",
+          "custoEnergiaKwh": "Custo de energia por kWh (€)",
+          "custoTarifaSocialKwh": "Tarifa social por kWh (€)",
+          "custoIECKwh": "Imposto IEC por kWh (€)",
+          "custoAudiovisual": "Taxa audiovisual (€)",
+          "custoDGEG": "Taxa DGEG (€)",
+          "valorConsumoIVAReduzido": "Limite de consumo com IVA reduzido (kWh)"
+        }
+      }
+    },
+    "error": {
+      "missing_sensor": "É obrigatório escolher um sensor de consumo geral (energia acumulada em kWh)."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções",
+        "description": "Atualiza os parâmetros de faturação de energia.",
+        "data": {
+          "statistic_id": "Sensor de consumo geral (Shelly)",
+          "diaInicioFaturacao": "Dia do início do ciclo de faturação",
+          "custoEnergiaDia": "Custo de energia por dia (€)",
+          "custoEnergiaKwh": "Custo de energia por kWh (€)",
+          "custoTarifaSocialKwh": "Tarifa social por kWh (€)",
+          "custoIECKwh": "Imposto IEC por kWh (€)",
+          "custoAudiovisual": "Taxa audiovisual (€)",
+          "custoDGEG": "Taxa DGEG (€)",
+          "valorConsumoIVAReduzido": "Limite de consumo com IVA reduzido (kWh)"
+        }
+      }
+    },
+    "error": {
+      "missing_sensor": "É obrigatório escolher um sensor de consumo geral (energia acumulada em kWh)."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ambiente virtual
+.env
+.venv/
+venv/
+
+# Editores / SO
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Distribuição / builds
+build/
+dist/
+*.egg-info/
+
+# Home Assistant (caso se teste localmente)
+*.db
+*.log
