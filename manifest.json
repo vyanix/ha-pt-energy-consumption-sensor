@@ -1,7 +1,7 @@
 {
   "domain": "pt_energy_consumption_sensor",
   "name": "PT Energy Consumption Sensor",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "documentation": "https://github.com/vyanix/ha-pt-energy-consumption-sensor",
   "issue_tracker": "https://github.com/vyanix/ha-pt-energy-consumption-sensor/issues",
   "codeowners": ["@vyanix"],
