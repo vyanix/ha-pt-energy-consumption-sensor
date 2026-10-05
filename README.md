@@ -135,6 +135,7 @@ pt_energy_consumption_sensor/
 ├── brand/               # Ícones e logos locais (HA 2026.3+)
 ├── translations/        # Traduções (en, pt)
 ├── README.md
+├── CHANGELOG.md         # Histórico de versões (Keep a Changelog)
 ├── LICENSE
 └── .gitignore
 ```
