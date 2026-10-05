@@ -7,6 +7,8 @@ A integração expõe duas entidades por config entry:
 
 Ambas partilham um ``DataUpdateCoordinator`` que lê as estatísticas de longo
 prazo do Recorder (via API pública) e recalcula os valores a cada 30 minutos.
+O consumo é repartido pelos períodos horários (Vazio, Fora de Vazio, Cheio,
+Ponta) de acordo com a opção tarifária e o ciclo configurados.
 """
 
 from __future__ import annotations
@@ -34,20 +36,27 @@ from homeassistant.helpers.update_coordinator import (
 )
 from homeassistant.util import dt as dt_util
 
+from . import tariffs
 from .const import (
+    CONF_CICLO_HORARIO,
     CONF_CUSTO_AUDIOVISUAL,
+    CONF_CUSTO_CHEIO_KWH,
     CONF_CUSTO_DGEG,
     CONF_CUSTO_ENERGIA_DIA,
     CONF_CUSTO_ENERGIA_KWH,
+    CONF_CUSTO_FORA_VAZIO_KWH,
     CONF_CUSTO_IEC_KWH,
+    CONF_CUSTO_PONTA_KWH,
     CONF_CUSTO_TARIFA_SOCIAL_KWH,
+    CONF_CUSTO_VAZIO_KWH,
     CONF_DIA_INICIO_FATURACAO,
+    CONF_FAMILIAS_NUMEROSAS,
+    CONF_OPCAO_TARIFARIA,
+    CONF_POTENCIA_CONTRATADA,
+    CONF_REGIAO,
     CONF_STATISTIC_ID,
-    CONF_VALOR_CONSUMO_IVA_REDUZIDO,
     DEFAULTS,
     DOMAIN,
-    IVA_NORMAL,
-    IVA_REDUZIDO,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,6 +82,29 @@ def billing_cycle_start(now: datetime.datetime, start_day: int) -> datetime.date
     )
     last_month_last_day = first_of_this_month - datetime.timedelta(days=1)
     return _safe_replace_day(last_month_last_day, start_day)
+
+
+def _energy_cost(
+    kwh: float,
+    price: float,
+    total_kwh: float,
+    kwh_reduzido: float,
+    kwh_normal: float,
+    regiao: str,
+) -> float:
+    """Custo da energia de um período, com IVA reduzido/normal.
+
+    O plafond de IVA reduzido é aplicado ao total do ciclo; a parcela reduzida e
+    a parcela normal são distribuídas por cada período em proporção ao respetivo
+    consumo (regra da ERSE para as tarifas bi e tri-horárias).
+    """
+    if kwh <= 0 or total_kwh <= 0:
+        return 0.0
+    share = kwh / total_kwh
+    return (
+        kwh_reduzido * share * price * tariffs.iva_reduzido(regiao)
+        + kwh_normal * share * price * tariffs.iva_normal(regiao)
+    )
 
 
 class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -117,13 +149,50 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         statistic_id: str = self.get_config(
             CONF_STATISTIC_ID, DEFAULTS[CONF_STATISTIC_ID]
         )
-        total_kwh = self._query_total_kwh(statistic_id, start_date, now)
+        option: str = self.get_config(
+            CONF_OPCAO_TARIFARIA, DEFAULTS[CONF_OPCAO_TARIFARIA]
+        )
+        cycle: str = self.get_config(
+            CONF_CICLO_HORARIO, DEFAULTS[CONF_CICLO_HORARIO]
+        )
+        regiao: str = self.get_config(CONF_REGIAO, DEFAULTS[CONF_REGIAO])
+        potencia_contratada = float(
+            self.get_config(
+                CONF_POTENCIA_CONTRATADA, DEFAULTS[CONF_POTENCIA_CONTRATADA]
+            )
+        )
+        familias_numerosas = bool(
+            self.get_config(
+                CONF_FAMILIAS_NUMEROSAS, DEFAULTS[CONF_FAMILIAS_NUMEROSAS]
+            )
+        )
+
+        rows = self._query_hourly_changes(statistic_id, start_date, now)
+        consumption = tariffs.consumption_by_period(rows, option, cycle)
+        total_kwh = sum(consumption.values())
+
+        prices = {
+            tariffs.PERIODO_UNICO: float(
+                self.get_config(CONF_CUSTO_ENERGIA_KWH, DEFAULTS[CONF_CUSTO_ENERGIA_KWH])
+            ),
+            tariffs.PERIODO_VAZIO: float(
+                self.get_config(CONF_CUSTO_VAZIO_KWH, DEFAULTS[CONF_CUSTO_VAZIO_KWH])
+            ),
+            tariffs.PERIODO_FORA_VAZIO: float(
+                self.get_config(
+                    CONF_CUSTO_FORA_VAZIO_KWH, DEFAULTS[CONF_CUSTO_FORA_VAZIO_KWH]
+                )
+            ),
+            tariffs.PERIODO_CHEIO: float(
+                self.get_config(CONF_CUSTO_CHEIO_KWH, DEFAULTS[CONF_CUSTO_CHEIO_KWH])
+            ),
+            tariffs.PERIODO_PONTA: float(
+                self.get_config(CONF_CUSTO_PONTA_KWH, DEFAULTS[CONF_CUSTO_PONTA_KWH])
+            ),
+        }
 
         custo_energia_dia = float(
             self.get_config(CONF_CUSTO_ENERGIA_DIA, DEFAULTS[CONF_CUSTO_ENERGIA_DIA])
-        )
-        custo_energia_kwh = float(
-            self.get_config(CONF_CUSTO_ENERGIA_KWH, DEFAULTS[CONF_CUSTO_ENERGIA_KWH])
         )
         custo_tarifa_social_kwh = float(
             self.get_config(
@@ -139,12 +208,14 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         custo_dgeg = float(
             self.get_config(CONF_CUSTO_DGEG, DEFAULTS[CONF_CUSTO_DGEG])
         )
-        limite_iva_reduzido = float(
-            self.get_config(
-                CONF_VALOR_CONSUMO_IVA_REDUZIDO,
-                DEFAULTS[CONF_VALOR_CONSUMO_IVA_REDUZIDO],
-            )
-        )
+
+        # Regras de IVA (ERSE): a taxa reduzida só se aplica a potências
+        # contratadas até 6,9 kVA (inclusive). O plafond mensal é de 200 kWh no
+        # regime geral e 300 kWh para famílias numerosas (5 ou mais elementos).
+        if potencia_contratada > tariffs.potencia_max_iva_reduzido():
+            limite_iva_reduzido = 0.0
+        else:
+            limite_iva_reduzido = tariffs.limite_iva_reduzido(familias_numerosas)
 
         if total_kwh > limite_iva_reduzido:
             kwh_iva_reduzido = limite_iva_reduzido
@@ -153,28 +224,51 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             kwh_iva_reduzido = total_kwh
             kwh_iva_normal = 0.0
 
+        # Custo da energia por período horário aplicável à opção escolhida.
+        period_costs: dict[str, float] = {}
+        for period in tariffs.periods_for(option):
+            period_costs[period] = _energy_cost(
+                consumption.get(period, 0.0),
+                prices.get(period, 0.0),
+                total_kwh,
+                kwh_iva_reduzido,
+                kwh_iva_normal,
+                regiao,
+            )
+        subtotal_energia = sum(period_costs.values())
+
         dias = (now.date() - start_date.date()).days + 1
 
-        subtotal_iva_reduzido = (kwh_iva_reduzido * custo_energia_kwh) * IVA_REDUZIDO
-        subtotal_iva_normal = (kwh_iva_normal * custo_energia_kwh) * IVA_NORMAL
-        subtotal_energia_dia = (custo_energia_dia * dias) * IVA_NORMAL
+        iva_reduzido = tariffs.iva_reduzido(regiao)
+        iva_normal = tariffs.iva_normal(regiao)
+
+        subtotal_energia_dia = (custo_energia_dia * dias) * iva_normal
         subtotal_tarifa_social = (
-            (kwh_iva_reduzido * custo_tarifa_social_kwh) * IVA_REDUZIDO
-            + (kwh_iva_normal * custo_tarifa_social_kwh) * IVA_NORMAL
+            (kwh_iva_reduzido * custo_tarifa_social_kwh) * iva_reduzido
+            + (kwh_iva_normal * custo_tarifa_social_kwh) * iva_normal
         )
-        subtotal_iec = (total_kwh * custo_iec_kwh) * IVA_NORMAL
-        subtotal_audiovisual = custo_audiovisual * IVA_REDUZIDO
-        subtotal_dgeg = custo_dgeg * IVA_NORMAL
+        subtotal_iec = (total_kwh * custo_iec_kwh) * iva_normal
+        subtotal_audiovisual = custo_audiovisual * iva_reduzido
+        subtotal_dgeg = custo_dgeg * iva_normal
 
         total = (
             subtotal_energia_dia
-            + subtotal_iva_reduzido
-            + subtotal_iva_normal
+            + subtotal_energia
             + subtotal_tarifa_social
             + subtotal_iec
             + subtotal_audiovisual
             + subtotal_dgeg
         )
+
+        # Períodos expostos como atributos: sempre presentes, 0 quando não se aplica.
+        consumo_periodo = {
+            period: round(consumption.get(period, 0.0), 2)
+            for period in tariffs.PERIODOS_ATRIBUTO
+        }
+        custo_periodo = {
+            period: round(period_costs.get(period, 0.0), 2)
+            for period in tariffs.PERIODOS_ATRIBUTO
+        }
 
         return {
             "total_cost": round(total, 2),
@@ -182,10 +276,23 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "dias": dias,
             "start_date": start_date,
             "end_date": now,
+            "opcao_tarifaria": option,
+            "ciclo_horario": cycle,
+            "regiao": regiao,
+            "potencia_contratada": potencia_contratada,
+            "familias_numerosas": familias_numerosas,
+            "limite_iva_reduzido": round(limite_iva_reduzido, 2),
+            "consumo_periodo": consumo_periodo,
+            "custo_periodo": custo_periodo,
             "breakdown": {
+                "energia_unico": round(period_costs.get(tariffs.PERIODO_UNICO, 0.0), 2),
+                "energia_vazio": round(period_costs.get(tariffs.PERIODO_VAZIO, 0.0), 2),
+                "energia_fora_vazio": round(
+                    period_costs.get(tariffs.PERIODO_FORA_VAZIO, 0.0), 2
+                ),
+                "energia_cheio": round(period_costs.get(tariffs.PERIODO_CHEIO, 0.0), 2),
+                "energia_ponta": round(period_costs.get(tariffs.PERIODO_PONTA, 0.0), 2),
                 "energia_dia": round(subtotal_energia_dia, 2),
-                "energia_iva_reduzido": round(subtotal_iva_reduzido, 2),
-                "energia_iva_normal": round(subtotal_iva_normal, 2),
                 "tarifa_social": round(subtotal_tarifa_social, 2),
                 "iec": round(subtotal_iec, 2),
                 "audiovisual": round(subtotal_audiovisual, 2),
@@ -195,13 +302,13 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             },
         }
 
-    def _query_total_kwh(
+    def _query_hourly_changes(
         self,
         statistic_id: str,
         start_date: datetime.datetime,
         end_date: datetime.datetime,
-    ) -> float:
-        """Devolve o consumo (kWh) desde ``start_date`` até ``end_date``.
+    ) -> list[dict[str, Any]]:
+        """Devolve as variações horárias (kWh) do sensor no intervalo dado.
 
         Usa a API pública do Recorder em vez de aceder diretamente ao SQLite.
         Com ``period="hour"`` e ``types={"change"}``, cada linha traz a variação
@@ -218,11 +325,7 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             {"energy": "kWh"},
             {"change"},
         )
-
-        rows = stats.get(statistic_id, [])
-        return sum(
-            row["change"] for row in rows if row.get("change") is not None
-        )
+        return list(stats.get(statistic_id, []))
 
 
 async def async_setup_entry(
@@ -255,7 +358,7 @@ class PTEnergyBaseSensor(CoordinatorEntity[PTEnergyCoordinator], SensorEntity):
             name="Vyanix Power Monitor",
             manufacturer="Vyanix",
             model="Energy Meter v1",
-            sw_version="1.2.0",
+            sw_version="1.3.0",
         )
 
 
@@ -288,11 +391,27 @@ class PTEnergyCostSensor(PTEnergyBaseSensor):
         data = self.coordinator.data
         start_date: datetime.datetime = data["start_date"]
         end_date: datetime.datetime = data["end_date"]
+        consumption = data["consumo_periodo"]
+        costs = data["custo_periodo"]
         return {
+            "opcao_tarifaria": data["opcao_tarifaria"],
+            "ciclo_horario": data["ciclo_horario"],
+            "regiao": data["regiao"],
+            "potencia_contratada_kva": data["potencia_contratada"],
+            "familias_numerosas": data["familias_numerosas"],
+            "limite_iva_reduzido_kwh": data["limite_iva_reduzido"],
             "total_kwh": data["total_kwh"],
             "dias_ciclo": data["dias"],
             "inicio_ciclo": start_date.strftime("%Y-%m-%d"),
             "fim_ciclo": end_date.strftime("%Y-%m-%d"),
+            "consumo_vazio_kwh": consumption[tariffs.PERIODO_VAZIO],
+            "consumo_fora_vazio_kwh": consumption[tariffs.PERIODO_FORA_VAZIO],
+            "consumo_cheio_kwh": consumption[tariffs.PERIODO_CHEIO],
+            "consumo_ponta_kwh": consumption[tariffs.PERIODO_PONTA],
+            "custo_vazio": costs[tariffs.PERIODO_VAZIO],
+            "custo_fora_vazio": costs[tariffs.PERIODO_FORA_VAZIO],
+            "custo_cheio": costs[tariffs.PERIODO_CHEIO],
+            "custo_ponta": costs[tariffs.PERIODO_PONTA],
             "detalhe_custos": data["breakdown"],
         }
 
@@ -324,8 +443,16 @@ class PTEnergyConsumptionSensor(PTEnergyBaseSensor):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         data = self.coordinator.data
+        consumption = data["consumo_periodo"]
         return {
+            "opcao_tarifaria": data["opcao_tarifaria"],
+            "ciclo_horario": data["ciclo_horario"],
+            "regiao": data["regiao"],
             "inicio_ciclo": data["start_date"].strftime("%Y-%m-%d"),
             "fim_ciclo": data["end_date"].strftime("%Y-%m-%d"),
             "dias_ciclo": data["dias"],
+            "consumo_vazio_kwh": consumption[tariffs.PERIODO_VAZIO],
+            "consumo_fora_vazio_kwh": consumption[tariffs.PERIODO_FORA_VAZIO],
+            "consumo_cheio_kwh": consumption[tariffs.PERIODO_CHEIO],
+            "consumo_ponta_kwh": consumption[tariffs.PERIODO_PONTA],
         }

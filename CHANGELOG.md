@@ -8,9 +8,68 @@ e o projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt/).
 ## [Não publicado]
 
 ### Planeado
-- Suporte a tarifas bi-horárias / tri-horárias (vazio, fora de vazio e ponta).
 - Configuração de um segundo sensor de consumo (ex.: produção solar).
 - Opção para definir o título do dispositivo e das entidades.
+
+---
+
+## [1.3.0] - 2026-10-05
+
+### Adicionado
+- **Opções tarifárias** no mercado português: **Simples**, **Bi-Horária** e
+  **Tri-Horária**, selecionáveis na configuração.
+- **Ciclos horários** **Diário** e **Semanal**, com distinção entre dias úteis,
+  sábados e domingos no ciclo semanal.
+- **Preços por período horário**: campos de custo por kWh para **Vazio**,
+  **Fora de Vazio**, **Cheio** e **Ponta**.
+- **Novo ficheiro `tariffs.json`** com a estrutura das tarifas, períodos e
+  horários definidos pela ERSE, separado do código para ser fácil de manter e
+  atualizar.
+- **Novo módulo `tariffs.py`** que carrega o `tariffs.json` e classifica o
+  consumo horário pelos períodos horários aplicáveis.
+- **Determinação automática da estação** (verão/inverno) com base na hora legal
+  (DST).
+- **Regras de IVA da ERSE**: a taxa reduzida só se aplica a **potências
+  contratadas até 6,9 kVA** (acima disso, todo o consumo é tributado à taxa
+  normal), configurável através da **potência contratada**.
+- **Opção "Família numerosa"** (5 ou mais elementos): plafond de **300 kWh** com
+  IVA reduzido, em vez dos 200 kWh do regime geral.
+- **Seleção de região de IVA**: Portugal Continental (predefinição), Açores e
+  Madeira, cada uma com as respetivas taxas reduzida e normal.
+- **Atributos** `potencia_contratada_kva`, `familias_numerosas`,
+  `limite_iva_reduzido_kwh` e `regiao` no sensor de custo.
+- **Atributos de consumo e custo por período** no sensor de custo:
+  `consumo_vazio_kwh`, `consumo_fora_vazio_kwh`, `consumo_cheio_kwh`,
+  `consumo_ponta_kwh`, `custo_vazio`, `custo_fora_vazio`, `custo_cheio`,
+  `custo_ponta`, além de `opcao_tarifaria` e `ciclo_horario`.
+- **Atributos de consumo por período** também no sensor de consumo.
+
+### Alterado
+- O cálculo da energia passa a aplicar o preço do período horário correspondente
+  a cada hora, em vez de um preço único.
+- Os atributos de custo por período são **sempre devolvidos**, com valor **zero**
+  quando o período não se aplica à opção tarifária escolhida (ex.: Ponta na
+  tarifa Bi-Horária).
+- O plafond de IVA reduzido (200 kWh no regime geral, 300 kWh para famílias
+  numerosas) é distribuído proporcionalmente por cada período horário; acima de
+  6,9 kVA de potência contratada não há lugar a IVA reduzido.
+- `README.md` atualizado com a secção de tarifas, períodos horários e ciclos, e
+  com a nova tabela de parâmetros.
+- `manifest.json` atualizado para a versão `1.3.0`.
+
+### Notas
+- As estatísticas de longo prazo do Recorder têm granularidade horária; o consumo
+  de cada hora é repartido proporcionalmente pelos períodos que a intersectam
+  (ex.: 09:00–10:00 num dia com mudança às 09:15 conta 25 % em Cheio e 75 % em
+  Ponta).
+- Destina-se a **consumidores domésticos (Baixa Tensão Normal — BTN)**. Nestes
+  contratos, os **feriados seguem o horário do dia da semana em que calham**: um
+  feriado a um dia útil tem horário de dia útil, a um sábado tem horário de
+  sábado e a um domingo tem horário de domingo. Por esse motivo, a integração
+  distingue apenas dias úteis, sábados e domingos, sem tratamento especial de
+  feriados.
+- Os valores de IVA são selecionáveis por região: **Portugal Continental**
+  (predefinição, 6 %/23 %), **Açores** (4 %/16 %) e **Madeira** (5 %/22 %).
 
 ---
 
@@ -107,6 +166,7 @@ e o projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt/).
 - Atualização automática a cada 30 minutos.
 - Dispositivo virtual *Vyanix Power Monitor*.
 
+[1.3.0]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/releases/tag/v1.1.0
-[Não publicado]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.2.0...HEAD
+[Não publicado]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.3.0...HEAD

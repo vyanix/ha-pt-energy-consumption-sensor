@@ -1,0 +1,171 @@
+{
+  "_meta": {
+    "fonte": "ERSE - Entidade Reguladora dos Serviços Energéticos (Portugal Continental)",
+    "nota": "Horários em hora local. A estação (verão/inverno) é determinada automaticamente pela hora legal (DST)."
+  },
+  "iva": {
+    "regioes": {
+      "continente": {
+        "nome": "Portugal Continental",
+        "reduzido": 1.06,
+        "normal": 1.23
+      },
+      "acores": {
+        "nome": "Açores",
+        "reduzido": 1.04,
+        "normal": 1.16
+      },
+      "madeira": {
+        "nome": "Madeira",
+        "reduzido": 1.05,
+        "normal": 1.22
+      }
+    },
+    "potencia_max_kva": 6.9,
+    "limite_reduzido_kwh": 200,
+    "limite_reduzido_familias_kwh": 300,
+    "nota": "Taxa reduzida aplicável apenas a potências contratadas até 6,9 kVA (inclusive). O plafond mensal (200 kWh no regime geral, 300 kWh para famílias numerosas com 5 ou mais elementos) é distribuído proporcionalmente pelo consumo de cada período horário. As taxas de IVA variam por região: Continente (6%/23%), Açores (4%/16%) e Madeira (5%/22%)."
+  },
+  "opcoes_tarifarias": {
+    "simples": {
+      "nome": "Tarifa Simples",
+      "periodos": ["unico"]
+    },
+    "bi-horaria": {
+      "nome": "Tarifa Bi-Horária",
+      "periodos": ["vazio", "fora_vazio"]
+    },
+    "tri-horaria": {
+      "nome": "Tarifa Tri-Horária",
+      "periodos": ["vazio", "cheio", "ponta"]
+    }
+  },
+  "ciclos": {
+    "diario": {
+      "nome": "Ciclo Diário",
+      "tipos_dia": ["todos"]
+    },
+    "semanal": {
+      "nome": "Ciclo Semanal",
+      "tipos_dia": ["util", "sabado", "domingo"]
+    }
+  },
+  "horarios": {
+    "bi-horaria": {
+      "diario": {
+        "todos": {
+          "verao": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "24:00", "periodo": "fora_vazio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "24:00", "periodo": "fora_vazio"}
+          ]
+        }
+      },
+      "semanal": {
+        "util": {
+          "verao": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "24:00", "periodo": "fora_vazio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "24:00", "periodo": "fora_vazio"}
+          ]
+        },
+        "sabado": {
+          "verao": [
+            {"inicio": "00:00", "fim": "09:00", "periodo": "vazio"},
+            {"inicio": "09:00", "fim": "14:00", "periodo": "fora_vazio"},
+            {"inicio": "14:00", "fim": "20:00", "periodo": "vazio"},
+            {"inicio": "20:00", "fim": "22:00", "periodo": "fora_vazio"},
+            {"inicio": "22:00", "fim": "24:00", "periodo": "vazio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "09:30", "periodo": "vazio"},
+            {"inicio": "09:30", "fim": "13:00", "periodo": "fora_vazio"},
+            {"inicio": "13:00", "fim": "18:30", "periodo": "vazio"},
+            {"inicio": "18:30", "fim": "22:00", "periodo": "fora_vazio"},
+            {"inicio": "22:00", "fim": "24:00", "periodo": "vazio"}
+          ]
+        },
+        "domingo": {
+          "verao": [
+            {"inicio": "00:00", "fim": "24:00", "periodo": "vazio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "24:00", "periodo": "vazio"}
+          ]
+        }
+      }
+    },
+    "tri-horaria": {
+      "diario": {
+        "todos": {
+          "verao": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "09:15", "periodo": "cheio"},
+            {"inicio": "09:15", "fim": "12:15", "periodo": "ponta"},
+            {"inicio": "12:15", "fim": "15:30", "periodo": "cheio"},
+            {"inicio": "15:30", "fim": "21:30", "periodo": "ponta"},
+            {"inicio": "21:30", "fim": "24:00", "periodo": "cheio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "09:30", "periodo": "cheio"},
+            {"inicio": "09:30", "fim": "12:00", "periodo": "ponta"},
+            {"inicio": "12:00", "fim": "18:30", "periodo": "cheio"},
+            {"inicio": "18:30", "fim": "21:00", "periodo": "ponta"},
+            {"inicio": "21:00", "fim": "24:00", "periodo": "cheio"}
+          ]
+        }
+      },
+      "semanal": {
+        "util": {
+          "verao": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "09:15", "periodo": "cheio"},
+            {"inicio": "09:15", "fim": "12:15", "periodo": "ponta"},
+            {"inicio": "12:15", "fim": "15:30", "periodo": "cheio"},
+            {"inicio": "15:30", "fim": "21:30", "periodo": "ponta"},
+            {"inicio": "21:30", "fim": "24:00", "periodo": "cheio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "07:00", "periodo": "vazio"},
+            {"inicio": "07:00", "fim": "09:30", "periodo": "cheio"},
+            {"inicio": "09:30", "fim": "12:00", "periodo": "ponta"},
+            {"inicio": "12:00", "fim": "18:30", "periodo": "cheio"},
+            {"inicio": "18:30", "fim": "21:00", "periodo": "ponta"},
+            {"inicio": "21:00", "fim": "24:00", "periodo": "cheio"}
+          ]
+        },
+        "sabado": {
+          "verao": [
+            {"inicio": "00:00", "fim": "09:00", "periodo": "vazio"},
+            {"inicio": "09:00", "fim": "14:00", "periodo": "cheio"},
+            {"inicio": "14:00", "fim": "20:00", "periodo": "vazio"},
+            {"inicio": "20:00", "fim": "22:00", "periodo": "cheio"},
+            {"inicio": "22:00", "fim": "24:00", "periodo": "vazio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "09:30", "periodo": "vazio"},
+            {"inicio": "09:30", "fim": "13:00", "periodo": "cheio"},
+            {"inicio": "13:00", "fim": "18:30", "periodo": "vazio"},
+            {"inicio": "18:30", "fim": "22:00", "periodo": "cheio"},
+            {"inicio": "22:00", "fim": "24:00", "periodo": "vazio"}
+          ]
+        },
+        "domingo": {
+          "verao": [
+            {"inicio": "00:00", "fim": "24:00", "periodo": "vazio"}
+          ],
+          "inverno": [
+            {"inicio": "00:00", "fim": "24:00", "periodo": "vazio"}
+          ]
+        }
+      }
+    }
+  }
+}

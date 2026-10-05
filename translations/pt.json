@@ -7,13 +7,21 @@
         "data": {
           "statistic_id": "Sensor de consumo geral (Shelly)",
           "diaInicioFaturacao": "Dia do início do ciclo de faturação",
+          "opcaoTarifaria": "Opção tarifária (Simples, Bi-Horária, Tri-Horária)",
+          "cicloHorario": "Ciclo horário (Diário ou Semanal)",
+          "potenciaContratada": "Potência contratada (kVA)",
+          "familiasNumerosas": "Família numerosa (5 ou mais elementos) — 300 kWh com IVA reduzido",
+          "regiao": "Região (taxas de IVA)",
+          "custoEnergiaKwh": "Custo de energia por kWh — tarifa simples (€)",
+          "custoVazioKwh": "Custo do período Vazio por kWh (€)",
+          "custoForaVazioKwh": "Custo do período Fora de Vazio por kWh (€)",
+          "custoCheioKwh": "Custo do período Cheio por kWh (€)",
+          "custoPontaKwh": "Custo do período Ponta por kWh (€)",
           "custoEnergiaDia": "Custo de energia por dia (€)",
-          "custoEnergiaKwh": "Custo de energia por kWh (€)",
           "custoTarifaSocialKwh": "Tarifa social por kWh (€)",
           "custoIECKwh": "Imposto IEC por kWh (€)",
           "custoAudiovisual": "Taxa audiovisual (€)",
-          "custoDGEG": "Taxa DGEG (€)",
-          "valorConsumoIVAReduzido": "Limite de consumo com IVA reduzido (kWh)"
+          "custoDGEG": "Taxa DGEG (€)"
         }
       }
     },
@@ -29,13 +37,21 @@
         "data": {
           "statistic_id": "Sensor de consumo geral (Shelly)",
           "diaInicioFaturacao": "Dia do início do ciclo de faturação",
+          "opcaoTarifaria": "Opção tarifária (Simples, Bi-Horária, Tri-Horária)",
+          "cicloHorario": "Ciclo horário (Diário ou Semanal)",
+          "potenciaContratada": "Potência contratada (kVA)",
+          "familiasNumerosas": "Família numerosa (5 ou mais elementos) — 300 kWh com IVA reduzido",
+          "regiao": "Região (taxas de IVA)",
+          "custoEnergiaKwh": "Custo de energia por kWh — tarifa simples (€)",
+          "custoVazioKwh": "Custo do período Vazio por kWh (€)",
+          "custoForaVazioKwh": "Custo do período Fora de Vazio por kWh (€)",
+          "custoCheioKwh": "Custo do período Cheio por kWh (€)",
+          "custoPontaKwh": "Custo do período Ponta por kWh (€)",
           "custoEnergiaDia": "Custo de energia por dia (€)",
-          "custoEnergiaKwh": "Custo de energia por kWh (€)",
           "custoTarifaSocialKwh": "Tarifa social por kWh (€)",
           "custoIECKwh": "Imposto IEC por kWh (€)",
           "custoAudiovisual": "Taxa audiovisual (€)",
-          "custoDGEG": "Taxa DGEG (€)",
-          "valorConsumoIVAReduzido": "Limite de consumo com IVA reduzido (kWh)"
+          "custoDGEG": "Taxa DGEG (€)"
         }
       }
     },
