@@ -37,7 +37,8 @@ dispositivo virtual *Vyanix Power Monitor*:
 | `sensor.consumo_do_ciclo_de_faturacao` | kWh | Energia consumida desde o início do ciclo de faturação |
 
 O sensor de custo expõe ainda os atributos:
-`total_kwh`, `dias_ciclo`, `inicio_ciclo`, `fim_ciclo`, `opcao_tarifaria`,
+`total_kwh`, `dias_ciclo`, `dias_totais_ciclo`, `dia_inicio_faturacao`,
+`inicio_ciclo`, `fim_ciclo`, `fim_janela_calculo`, `opcao_tarifaria`,
 `ciclo_horario`, o consumo e o custo de cada período horário
 (`consumo_vazio_kwh`, `consumo_fora_vazio_kwh`, `consumo_cheio_kwh`,
 `consumo_ponta_kwh`, `custo_vazio`, `custo_fora_vazio`, `custo_cheio`,
@@ -46,6 +47,27 @@ O sensor de custo expõe ainda os atributos:
 O sensor de consumo expõe `inicio_ciclo`, `fim_ciclo`, `dias_ciclo` e o consumo
 de cada período horário, e usa `last_reset` para que as estatísticas de longo
 prazo reiniciem a cada ciclo.
+
+### Ciclo de faturação
+
+O ciclo começa no **dia configurado** e termina no **dia anterior ao início do
+ciclo seguinte**:
+
+| Dia de início | Início do ciclo | Fim do ciclo |
+|---|---|---|
+| `1` | dia 1 do mês | **último dia do mês** (28/29/30/31) |
+| `8` | dia 8 do mês | **dia 7 do mês seguinte** |
+| `11` | dia 11 do mês | **dia 10 do mês seguinte** |
+
+O contador reinicia quando começa um novo ciclo. Os atributos distinguem:
+
+- **`inicio_ciclo`** — data de início do ciclo atual.
+- **`fim_ciclo`** — último dia do ciclo (data prevista de fecho).
+- **`fim_janela_calculo`** — data até onde os dados já foram lidos (normalmente
+  hoje, já que o ciclo ainda está a decorrer).
+- **`dias_ciclo`** — dias decorridos desde o início até hoje.
+- **`dias_totais_ciclo`** — duração total do ciclo.
+- **`dia_inicio_faturacao`** — o número do dia configurado.
 
 ---
 

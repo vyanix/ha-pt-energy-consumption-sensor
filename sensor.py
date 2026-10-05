@@ -84,6 +84,22 @@ def billing_cycle_start(now: datetime.datetime, start_day: int) -> datetime.date
     return _safe_replace_day(last_month_last_day, start_day)
 
 
+def billing_cycle_end(now: datetime.datetime, start_day: int) -> datetime.datetime:
+    """Devolve o último dia (inclusive) do ciclo de faturação que contém ``now``.
+
+    O ciclo termina no dia anterior ao início do ciclo seguinte: com início ao
+    dia 1, termina no último dia do mês; com início ao dia 8, termina no dia 7
+    do mês seguinte; e assim sucessivamente.
+    """
+    start = billing_cycle_start(now, start_day)
+    if start.month == 12:
+        first_of_next_month = start.replace(year=start.year + 1, month=1, day=1)
+    else:
+        first_of_next_month = start.replace(month=start.month + 1, day=1)
+    next_start = _safe_replace_day(first_of_next_month, start_day)
+    return next_start - datetime.timedelta(days=1)
+
+
 def _energy_cost(
     kwh: float,
     price: float,
@@ -137,14 +153,13 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def _calculate(self) -> dict[str, Any]:
         """Consulta as estatísticas do Recorder (em executor) e faz os cálculos."""
         now = dt_util.now()
-        start_date = billing_cycle_start(
-            now,
-            int(
-                self.get_config(
-                    CONF_DIA_INICIO_FATURACAO, DEFAULTS[CONF_DIA_INICIO_FATURACAO]
-                )
-            ),
+        dia_inicio_faturacao = int(
+            self.get_config(
+                CONF_DIA_INICIO_FATURACAO, DEFAULTS[CONF_DIA_INICIO_FATURACAO]
+            )
         )
+        start_date = billing_cycle_start(now, dia_inicio_faturacao)
+        cycle_end = billing_cycle_end(now, dia_inicio_faturacao)
 
         statistic_id: str = self.get_config(
             CONF_STATISTIC_ID, DEFAULTS[CONF_STATISTIC_ID]
@@ -238,6 +253,7 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         subtotal_energia = sum(period_costs.values())
 
         dias = (now.date() - start_date.date()).days + 1
+        dias_totais = (cycle_end.date() - start_date.date()).days + 1
 
         iva_reduzido = tariffs.iva_reduzido(regiao)
         iva_normal = tariffs.iva_normal(regiao)
@@ -274,7 +290,10 @@ class PTEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "total_cost": round(total, 2),
             "total_kwh": round(total_kwh, 2),
             "dias": dias,
+            "dias_totais": dias_totais,
+            "dia_inicio_faturacao": dia_inicio_faturacao,
             "start_date": start_date,
+            "cycle_end": cycle_end,
             "end_date": now,
             "opcao_tarifaria": option,
             "ciclo_horario": cycle,
@@ -358,7 +377,7 @@ class PTEnergyBaseSensor(CoordinatorEntity[PTEnergyCoordinator], SensorEntity):
             name="Vyanix Power Monitor",
             manufacturer="Vyanix",
             model="Energy Meter v1",
-            sw_version="1.3.0",
+            sw_version="1.3.1",
         )
 
 
@@ -402,8 +421,11 @@ class PTEnergyCostSensor(PTEnergyBaseSensor):
             "limite_iva_reduzido_kwh": data["limite_iva_reduzido"],
             "total_kwh": data["total_kwh"],
             "dias_ciclo": data["dias"],
+            "dias_totais_ciclo": data["dias_totais"],
+            "dia_inicio_faturacao": data["dia_inicio_faturacao"],
             "inicio_ciclo": start_date.strftime("%Y-%m-%d"),
-            "fim_ciclo": end_date.strftime("%Y-%m-%d"),
+            "fim_ciclo": data["cycle_end"].strftime("%Y-%m-%d"),
+            "fim_janela_calculo": end_date.strftime("%Y-%m-%d"),
             "consumo_vazio_kwh": consumption[tariffs.PERIODO_VAZIO],
             "consumo_fora_vazio_kwh": consumption[tariffs.PERIODO_FORA_VAZIO],
             "consumo_cheio_kwh": consumption[tariffs.PERIODO_CHEIO],
@@ -449,8 +471,10 @@ class PTEnergyConsumptionSensor(PTEnergyBaseSensor):
             "ciclo_horario": data["ciclo_horario"],
             "regiao": data["regiao"],
             "inicio_ciclo": data["start_date"].strftime("%Y-%m-%d"),
-            "fim_ciclo": data["end_date"].strftime("%Y-%m-%d"),
+            "fim_ciclo": data["cycle_end"].strftime("%Y-%m-%d"),
             "dias_ciclo": data["dias"],
+            "dias_totais_ciclo": data["dias_totais"],
+            "dia_inicio_faturacao": data["dia_inicio_faturacao"],
             "consumo_vazio_kwh": consumption[tariffs.PERIODO_VAZIO],
             "consumo_fora_vazio_kwh": consumption[tariffs.PERIODO_FORA_VAZIO],
             "consumo_cheio_kwh": consumption[tariffs.PERIODO_CHEIO],

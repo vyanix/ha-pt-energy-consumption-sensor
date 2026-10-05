@@ -13,6 +13,28 @@ e o projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt/).
 
 ---
 
+## [1.3.1] - 2026-10-05
+
+### Adicionado
+- **Atributo `dia_inicio_faturacao`** (o dia do ciclo configurado) em ambos os
+  sensores, tornando explícito o valor que dá origem às datas do ciclo.
+- **Atributo `fim_janela_calculo`** — data até onde os dados foram efetivamente
+  lidos (normalmente hoje, já que o ciclo ainda está a decorrer).
+- **Atributo `dias_totais_ciclo`** — duração total do ciclo de faturação.
+
+### Corrigido
+- **Fim do ciclo de faturação**: `fim_ciclo` mostrava a data de leitura em vez do
+  último dia do ciclo. Passa a terminar no **dia anterior ao início do ciclo
+  seguinte** — início a 1 termina no último dia do mês (28/29/30/31); início a 8
+  termina a 7 do mês seguinte; e assim sucessivamente.
+
+### Alterado
+- `README.md` com a secção **"Ciclo de faturação"** a explicar as fronteiras do
+  ciclo e os novos atributos.
+- `manifest.json` atualizado para a versão `1.3.1`.
+
+---
+
 ## [1.3.0] - 2026-10-05
 
 ### Adicionado
@@ -166,7 +188,8 @@ e o projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt/).
 - Atualização automática a cada 30 minutos.
 - Dispositivo virtual *Vyanix Power Monitor*.
 
+[1.3.1]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/releases/tag/v1.1.0
-[Não publicado]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.3.0...HEAD
+[Não publicado]: https://github.com/vyanix/ha-pt-energy-consumption-sensor/compare/v1.3.1...HEAD
