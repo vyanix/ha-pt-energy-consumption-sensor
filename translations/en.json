@@ -7,13 +7,21 @@
         "data": {
           "statistic_id": "Overall consumption sensor (Shelly)",
           "diaInicioFaturacao": "Billing cycle start day",
+          "opcaoTarifaria": "Tariff option (Simple, Dual-Rate, Three-Rate)",
+          "cicloHorario": "Time cycle (Daily or Weekly)",
+          "potenciaContratada": "Contracted power (kVA)",
+          "familiasNumerosas": "Large family (5 or more members) — 300 kWh at reduced VAT",
+          "regiao": "Region (VAT rates)",
+          "custoEnergiaKwh": "Energy cost per kWh — simple tariff (€)",
+          "custoVazioKwh": "Off-peak (Vazio) cost per kWh (€)",
+          "custoForaVazioKwh": "Peak (Fora de Vazio) cost per kWh (€)",
+          "custoCheioKwh": "Mid-peak (Cheio) cost per kWh (€)",
+          "custoPontaKwh": "On-peak (Ponta) cost per kWh (€)",
           "custoEnergiaDia": "Energy cost per day (€)",
-          "custoEnergiaKwh": "Energy cost per kWh (€)",
           "custoTarifaSocialKwh": "Social tariff per kWh (€)",
           "custoIECKwh": "IEC tax per kWh (€)",
           "custoAudiovisual": "Audiovisual tax (€)",
-          "custoDGEG": "DGEG tax (€)",
-          "valorConsumoIVAReduzido": "Reduced VAT consumption limit (kWh)"
+          "custoDGEG": "DGEG tax (€)"
         }
       }
     },
@@ -29,13 +37,21 @@
         "data": {
           "statistic_id": "Overall consumption sensor (Shelly)",
           "diaInicioFaturacao": "Billing cycle start day",
+          "opcaoTarifaria": "Tariff option (Simple, Dual-Rate, Three-Rate)",
+          "cicloHorario": "Time cycle (Daily or Weekly)",
+          "potenciaContratada": "Contracted power (kVA)",
+          "familiasNumerosas": "Large family (5 or more members) — 300 kWh at reduced VAT",
+          "regiao": "Region (VAT rates)",
+          "custoEnergiaKwh": "Energy cost per kWh — simple tariff (€)",
+          "custoVazioKwh": "Off-peak (Vazio) cost per kWh (€)",
+          "custoForaVazioKwh": "Peak (Fora de Vazio) cost per kWh (€)",
+          "custoCheioKwh": "Mid-peak (Cheio) cost per kWh (€)",
+          "custoPontaKwh": "On-peak (Ponta) cost per kWh (€)",
           "custoEnergiaDia": "Energy cost per day (€)",
-          "custoEnergiaKwh": "Energy cost per kWh (€)",
           "custoTarifaSocialKwh": "Social tariff per kWh (€)",
           "custoIECKwh": "IEC tax per kWh (€)",
           "custoAudiovisual": "Audiovisual tax (€)",
-          "custoDGEG": "DGEG tax (€)",
-          "valorConsumoIVAReduzido": "Reduced VAT consumption limit (kWh)"
+          "custoDGEG": "DGEG tax (€)"
         }
       }
     },
